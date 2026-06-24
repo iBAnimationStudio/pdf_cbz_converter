@@ -34,7 +34,7 @@ else
     
     pkg update -y || { echo "Failed to update pkg"; exit 1; }
     pkg install -y python poppler || { echo "Failed to install system packages"; exit 1; }
-    pip3 install Pillow || { echo "Failed to install Pillow"; exit 1; }
+    pkg install python-pillow || { echo "Failed to install Pillow"; exit 1; }
 fi
 
 # Enable strict error checking and trapping ONLY after setup is complete
