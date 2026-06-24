@@ -42,22 +42,37 @@ set -e
 trap 'error_handler $LINENO' ERR
 
 echo "----------------------------------------"
-read -p "Enter input directory path (leave empty for current path): " INPUT_DIR
-read -p "Enter output directory path (leave empty for current path): " OUTPUT_DIR
+while true; do
+    read -p "Enter input directory path (leave empty for current path): " INPUT_DIR
+    [ -z "$INPUT_DIR" ] && INPUT_DIR="."
 
-# Default to current directory if left empty
-[ -z "$INPUT_DIR" ] && INPUT_DIR="."
-[ -z "$OUTPUT_DIR" ] && OUTPUT_DIR="."
+    if [ ! -d "$INPUT_DIR" ]; then
+        echo "Error: Directory '$INPUT_DIR' does not exist. Try again."
+        echo "----------------------------------------"
+        continue
+    fi
 
-# Verify input directory exists before scanning
-if [ ! -d "$INPUT_DIR" ]; then
-    echo "Error: Input directory '$INPUT_DIR' does not exist."
-    exit 1
-fi
+    echo "Scanning '$INPUT_DIR' for PDF and CBZ files..."
+    
+    # Temporarily disable error trapping for the file check
+    set +e
+    FILE_COUNT=$(ls -1 "$INPUT_DIR"/*.pdf "$INPUT_DIR"/*.cbz 2>/dev/null | wc -l)
+    set -e
+
+    if [ "$FILE_COUNT" -eq 0 ]; then
+        echo "Error: No recognized files (PDF/CBZ) found in '$INPUT_DIR'."
+        echo "Please select a correct directory with valid files inside."
+        echo "----------------------------------------"
+        continue
+    fi
+    
+    echo "Found $FILE_COUNT valid file(s). Ready to process."
+    break
+done
 
 echo "----------------------------------------"
-echo "Scanning $INPUT_DIR for PDF and CBZ files..."
-ls -1 "$INPUT_DIR"/*.pdf "$INPUT_DIR"/*.cbz 2>/dev/null || echo "No matching files found."
+read -p "Enter output directory path (leave empty for current path): " OUTPUT_DIR
+[ -z "$OUTPUT_DIR" ] && OUTPUT_DIR="."
 
 echo "----------------------------------------"
 echo "Select operation:"
