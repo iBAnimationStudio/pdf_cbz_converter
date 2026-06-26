@@ -35,7 +35,7 @@ chmod +x converter_linux.sh converter_termux.sh
 
 ```
 ### 3. Follow the Prompts
- 1. **Directories:** Enter your custom path input/output locations or hit Enter to use the current folder.
+ 1. **Directories:** Enter your custom path input/output locations or hit Enter to use the current folder.(I recomend to use external directly for input and output)
  2. **Select Operation:** Choose 1 for PDF to CBZ, or 2 for CBZ to PDF.
 ## Technical Details
  * **PDF ➔ CBZ:** Spawns a pdftoppm subprocess using flags [-jpeg -jpegopt quality=90 -r 300] for optimal comic/manga styling, storing files uncompressed (ZIP_STORED) inside the target archive to guarantee fast rendering speeds on typical comic readers.
