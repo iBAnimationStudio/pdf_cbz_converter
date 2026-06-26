@@ -54,10 +54,11 @@ while true; do
 
     echo "Scanning '$INPUT_DIR' for PDF and CBZ files..."
     
-    # Temporarily disable error trapping for the file check
-    set +e
-    FILE_COUNT=$(ls -1 "$INPUT_DIR"/*.pdf "$INPUT_DIR"/*.cbz 2>/dev/null | wc -l)
-    set -e
+    # Safe file counting using array globbing (avoids parsing ls)
+    shopt -s nullglob
+    valid_files=("$INPUT_DIR"/*.pdf "$INPUT_DIR"/*.cbz)
+    FILE_COUNT=${#valid_files[@]}
+    shopt -u nullglob
 
     if [ "$FILE_COUNT" -eq 0 ]; then
         echo "Error: No recognized files (PDF/CBZ) found in '$INPUT_DIR'."
@@ -74,20 +75,34 @@ echo "----------------------------------------"
 read -p "Enter output directory path (leave empty for current path): " OUTPUT_DIR
 [ -z "$OUTPUT_DIR" ] && OUTPUT_DIR="."
 
-echo "----------------------------------------"
-echo "Select operation:"
-echo "1) PDF to CBZ"
-echo "2) CBZ to PDF"
-read -p "Enter choice (1 or 2): " OPERATION
+# Loop operation choice to handle user typos smoothly
+while true; do
+    echo "----------------------------------------"
+    echo "Select operation:"
+    echo "1) PDF to CBZ"
+    echo "2) CBZ to PDF"
+    read -p "Enter choice (1 or 2): " OPERATION
+
+    if [ "$OPERATION" == "1" ] || [ "$OPERATION" == "2" ]; then
+        break
+    else
+        echo "Invalid selection. Please enter 1 or 2."
+    fi
+done
 
 echo "----------------------------------------"
 echo "Executing conversion script..."
 
 if [ "$OPERATION" == "1" ]; then
+    if [ ! -f "pdf_to_cbz.py" ]; then
+        echo "Error: Execution failed. 'pdf_to_cbz.py' is missing from the script directory!"
+        exit 1
+    fi
     python3 pdf_to_cbz.py "$INPUT_DIR" "$OUTPUT_DIR"
 elif [ "$OPERATION" == "2" ]; then
+    if [ ! -f "cbz_to_pdf.py" ]; then
+        echo "Error: Execution failed. 'cbz_to_pdf.py' is missing from the script directory!"
+        exit 1
+    fi
     python3 cbz_to_pdf.py "$INPUT_DIR" "$OUTPUT_DIR"
-else
-    echo "Invalid selection. Exiting."
-    exit 1
 fi
